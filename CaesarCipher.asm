@@ -35,8 +35,7 @@
  
  .data
  	buffer: .space 1024
- 	length: .word 250
- 	alphabet: .asciiz  "abcdefghijklmnopqrstuvwxyz"
+ 	alphabet: .asciiz  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
  .text
  main:
  	#question to ask the user for a message
