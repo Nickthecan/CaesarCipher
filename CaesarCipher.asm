@@ -60,7 +60,7 @@
 	#store buffer into $s0
 	la $s0, buffer
 
-__lengthOfMessage:
+__lengthOfMessage:     #this is gonna be challenge to write about
 	lb $t1, buffer($s3)
 	beqz $t1, __doSomethingToRegisters3
 	addi $s3, $s3, 1
