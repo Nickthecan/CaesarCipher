@@ -29,7 +29,6 @@
  #$t2 - loop counter for alphabet
  #$t3 - register to hold the iteration of the letters of alphabet string
  #$t4 - register to hold the encrypted letter to print out
- #$t5 - register to loop through the length of the message
  #-----------------------------------------------------------------------------------
  
  .include "CaesarCipherMacros.asm"
