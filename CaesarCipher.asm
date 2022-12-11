@@ -146,9 +146,9 @@ __printSpace:
 	
 __twoCharsAreEqual:
 	#checks if the character being passed through is an Uppercase character
-	bge $t2, 27, __upperCase
+	bge $t2, 26, __upperCase
 	#checks if the character being passed through is an Uppercase character
-	ble $t2, 26, __lowerCase
+	ble $t2, 25, __lowerCase
 	
 __continueEncryptLetter:
 	#load the new offset byte into $t4
@@ -222,9 +222,9 @@ __printSpaceDecryption:
 	
 __twoCharsAreEqualDecryption:
 	#checks if the character being passed through is an Uppercase character
-	bge $t2, 27, __upperCaseDecryption
+	bge $t2, 26, __upperCaseDecryption
 	#checks if the character being passed through is an Uppercase character
-	ble $t2, 26, __lowerCaseDecryption
+	ble $t2, 25, __lowerCaseDecryption
 	
 __continueDecryptLetter:
 	#load the new offset byte into $t4
