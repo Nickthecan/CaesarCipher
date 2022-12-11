@@ -22,7 +22,7 @@
  #buffer - message from user
  #$s0 - buffer
  #$s1 - key offset
- #$s2 - register that holds the space character
+ #$s2 - register that holds the operation
  #$s3 - register that holds the length of the buffer
  #$t0 - loop counter for buffer
  #$t1 - register to hold the iteration of the letters of the message
@@ -30,6 +30,7 @@
  #$t3 - register to hold the iteration of the letters of alphabet string
  #$t4 - register to hold the encrypted letter to print out
  #$t5 - register to hold the iteration of the letters of the message to check for invalid characters
+ #$t6 - loop counter for valid check loop
  #-----------------------------------------------------------------------------------
  
  .include "CaesarCipherMacros.asm"
@@ -72,13 +73,10 @@ __getKey:
  	print("Enter a message:\n")
   	#get a user input and store it into buffer
 	userInput
-	#question to ask the user for the offset
+	#loop counter for valid check loop
+	li $t6, 0
 	j __lengthOfMessage
-
 	
-__invalidMessage:
-	print("Invalid Message!\n")
-	j __messagePrompt
 
 __lengthOfMessage:     #this is gonna be challenge to write about
 	#load the byte of the message into $t1
@@ -90,12 +88,28 @@ __lengthOfMessage:     #this is gonna be challenge to write about
 	#at the end, $s3 should have the amount of times it looped thru the string, giving the length of the message
 	j __lengthOfMessage
 	
+
+	
 __doSomethingToRegisters3:
 	#decrement register $s3 by 1 in order to not have an excess char when printing the encrypted message
 	subi $s3, $s3, 1
+	j __validLoop
+	
+__validLoop:
+	lb $t5, buffer($t6)
+	blt $t5, 65, __invalidMessage
+	bgt $t5, 122, __invalidMessage
+	beq $t5, 91, __invalidMessage
+	beq $t5, 92, __invalidMessage
+	beq $t5, 93, __invalidMessage
+	beq $t5, 94, __invalidMessage
+	beq $t5, 95, __invalidMessage
+	beq $t5, 96, __invalidMessage
+	addi $t6, $t6, 1
+	addi $t5, $t5, 1
+	bne $t6, $s3, __validLoop
 	beq $s2, 1, __encryptionLoop
 	beq $s2, 2, __decryptionLoop
-	
 	
 	
 __encryptionLoop:
@@ -109,8 +123,6 @@ __encryptionLoop:
 __checkAlphabet:
 	#nested for loop
 	lb $t3, alphabet($t2)
-	#check for invalid characters
-	jal __checkValidity
 	#compare the two characters
 	beq $t1, $t3, __twoCharsAreEqual
 	#if not, increment $t2
@@ -118,17 +130,10 @@ __checkAlphabet:
 	#jump back to __checkAlphabet until the characters are equal
 	jal __checkAlphabet
 
-
-__checkValidity:
-	#check if characters are letters
-	blt $t1, 65, __invalidMessage
-	bgt $t1, 122, __invalidMessage
-	bgt $t1, 90, __isUpperCase
-	jr $ra
-__isUpperCase:
-	blt $t1, 97, __invalidMessage
-	jr $ra
-
+__invalidMessage:
+	print("Invalid Message!\n")
+	j __messagePrompt
+	
 __incrementString:	
 	#increment $0
 	addi $t0, $t0, 1
@@ -195,8 +200,6 @@ __decryptionLoop:
 __checkAlphabetDecryption:
 	#nested for loop
 	lb $t3, alphabet($t2)
-	#check for invalid characters
-	jal __checkValidity
 	#compare the two characters
 	beq $t1, $t3, __twoCharsAreEqualDecryption
 	#if not, increment $t2
