@@ -59,12 +59,17 @@
 	la $s0, buffer
 
 __lengthOfMessage:     #this is gonna be challenge to write about
+	#load the byte of the message into $t1
 	lb $t1, buffer($s3)
+	#compare if the character is not null
 	beqz $t1, __doSomethingToRegisters3
+	#if it isn't null, increment $s3 
 	addi $s3, $s3, 1
+	#at the end, $s3 should have the amount of times it looped thru the string, giving the length of the message
 	j __lengthOfMessage
 	
 __doSomethingToRegisters3:
+	#decrement register $s3 by 1 in order to not have an excess char when printing the encrypted message
 	subi $s3, $s3, 1
 	
 __encryptionLoop:
@@ -73,7 +78,7 @@ __encryptionLoop:
 	#conditional statement if the loop reaches the end of the character
 	beq $t0, $s3, exit
 	#conditional statement if char is space
-	beq $t1, $s1, __ifSpace
+	beq $t1, $s2, __ifSpace
 	
 __checkAlphabet:
 	#nested for loop
@@ -97,8 +102,12 @@ __ifSpace:
 	
 
 __twoCharsAreEqual:
-	#add the offset
-	add $t2, $t2, $s1
+	#checks if the character being passed through is an Uppercase character
+	bge $t2, 27, __upperCase
+	#checks if the character being passed through is an Uppercase character
+	ble $t2, 26, __lowerCase
+	
+__continueEncryptLetter:
 	#load the new offset byte into $t4
 	lb $t4, alphabet($t2)
 	#print the character
@@ -107,6 +116,27 @@ __twoCharsAreEqual:
 	syscall
 	#jump to __incrementString in order to go to the next letter of the message
 	jal __incrementString
+
+__upperCase:
+	#add the offset
+	add $t2, $t2, $s1
+	#if the number is less than 'Z' then continue with the encryption
+	ble $t2, 52, __continueEncryptLetter
+	#if not, then it went passed the alphabet, so we need to loop it back through "A"
+	subi $t2, $t2, 26
+	#jump to continueEncryptLetter
+	jal __continueEncryptLetter
+	
+__lowerCase:
+	#add the offset
+	add $t2, $t2, $s1
+	#if the number is less than 'z' then continue with the encryption
+	ble $t2, 26, __continueEncryptLetter
+	#if not, then it went passed the alphabet, so we need to loop it back through "a"
+	subi $t2, $t2, 26
+	#jump to continueEncryptLetter
+	jal __continueEncryptLetter
+	
 exit:
 	quitProgram
 	
