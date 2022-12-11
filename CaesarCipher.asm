@@ -73,7 +73,7 @@ __encryptionLoop:
 	#conditional statement if the loop reaches the end of the character
 	beq $t0, $s3, exit
 	#conditional statement if char is space
-	beq $t1, $s1, __ifSpace
+	beq $t1, 32, __printSpace
 	
 __checkAlphabet:
 	#nested for loop
@@ -93,8 +93,12 @@ __incrementString:
 	#jump back to __encryptionLoop
 	jal  __encryptionLoop
 	
-__ifSpace:
-	
+__printSpace:
+	#print space character
+	li $v0, 11
+	la $a0, 32
+	syscall
+	jal __incrementString
 
 __twoCharsAreEqual:
 	#add the offset
