@@ -1,12 +1,13 @@
-#Nicholas Amancio (and cesar)
+#Group Name: Nicholas Amancio (and cesar)
 #by Nicholas Amancio and Cesar Henry dePaula
 #12/11/22 | CS 2640 | Caesar Cipher
 
- #Objectives
+ #-----------------------------------------------------------objectives--------------
  #Implement Caesar Cipher
  #Encrypting a message by offsetting each letter by a user-specified amount
+ #-----------------------------------------------------------------------------------
  
- #Pseudo
+ #-----------------------------------------------------------pseudocode--------------
  #ask the user to enter a message and save it somewhere
  #ask the user for an offset number and save it to a register
  #enter an encryption loop where
@@ -17,6 +18,7 @@
  	#ignore spaces
  	#check for uppercase and lowercase
  #return the new encrypted string to the user
+ #-----------------------------------------------------------------------------------
  
  #-----------------------------------------------------------registers---------------
  #buffer - message from user
