@@ -30,9 +30,9 @@
  #$t1 - register to hold the iteration of the letters of the message
  #$t2 - loop counter for alphabet
  #$t3 - register to hold the iteration of the letters of alphabet string
- #$t4 - register to hold the encrypted letter to print out
+ #$t4 - loop counter for valid check loop
  #$t5 - register to hold the iteration of the letters of the message to check for invalid characters
- #$t6 - loop counter for valid check loop
+ #$t6 - register to hold the encrypted letter to print out
  #-----------------------------------------------------------------------------------
  
  .include "CaesarCipherMacros.asm"
@@ -44,6 +44,7 @@
  .text
  main:
  	#print main menu selection
+ 	print("\n---------Welcome to the Caesar Cipher-------------------------")
  	print("\nSelect an option:\n(1) encrypt\n(2) decrypt\n(3) exit\n")
  	
  	#retrieve the user input of the int and save it to register $s2
@@ -80,7 +81,7 @@ __getKey:
 	userInput
 	
 	#loop counter for valid check loop
-	li $t6, 0
+	li $t4, 0
 	#reset counter for length
 	li $s3, 0
 	
@@ -91,20 +92,20 @@ __lengthOfMessage:
 	#load the byte of the message into $t1
 	lb $t1, buffer($s3)
 	#compare if the character is not null
-	beqz $t1, __doSomethingToRegisters3
+	beqz $t1, __decrementRegisters3
 	#if it isn't null, increment $s3 
 	addi $s3, $s3, 1
 	#at the end, $s3 should have the amount of times it looped thru the string, giving the length of the message
 	j __lengthOfMessage
 	
-__doSomethingToRegisters3:
+__decrementRegisters3:
 	#decrement register $s3 by 1 in order to not have an excess char when printing the encrypted message
 	subi $s3, $s3, 1
 	j __validLoop
 	
 __validLoop:
 	#load the first character of message
-	lb $t5, buffer($t6)
+	lb $t5, buffer($t4)
 	#checks to see if the character is a letter. If not, then jump to __invalidMessage 
 	blt $t5, 65, __checkSpace
 __backToValidLoop:
@@ -116,9 +117,10 @@ __backToValidLoop:
 	beq $t5, 95, __invalidMessage
 	beq $t5, 96, __invalidMessage
 	#if it passes all the cases, then increment $t6
-	addi $t6, $t6, 1
+	addi $t4, $t4, 1
 	#checks to see if it reaches the end of the message
-	bne $t6, $s3, __validLoop
+	bne $t4, $s3, __validLoop
+	print("\n-new message-\n")
 	#if it reaches the end, then it checks to see if the user inputted Encryption or Decryption
 	beq $s2, 1, __encryptionLoop
 	beq $s2, 2, __decryptionLoop
@@ -131,7 +133,7 @@ __checkSpace:
 	
 __invalidMessage:
 	#print out invalid message
-	print("Invalid Message!\n")
+	print("Invalid Message!\n\n")
 	#jump to __messagePrompt
 	j __messagePrompt
 	
@@ -142,25 +144,25 @@ __encryptionLoop:
 	#conditional statement if the loop reaches the end of the character
 	beq $t0, $s3, main
 	#conditional statement if char is space
-	beq $t1, 32, __printSpace
+	beq $t1, 32, __printSpaceEncryption
 	
-__checkAlphabet:
+__checkAlphabetEncryption:
 	#load the first byte (character) into register $t3
 	lb $t3, alphabet($t2)
 	#compare the two characters
-	beq $t1, $t3, __twoCharsAreEqual
+	beq $t1, $t3, __twoCharsAreEqualEncryption
 	#if not, increment $t2
 	addi  $t2, $t2, 1
-	#jump back to __checkAlphabet until the characters are equal
-	jal __checkAlphabet
+	#jump back to __checkAlphabetEncryption until the characters are equal
+	jal __checkAlphabetEncryption
 
-__twoCharsAreEqual:
+__twoCharsAreEqualEncryption:
 	#checks if the character being passed through is an Uppercase character
-	bge $t2, 26, __upperCase
+	bge $t2, 26, __upperCaseEncryption
 	#checks if the character being passed through is an Uppercase character
-	ble $t2, 25, __lowerCase
+	ble $t2, 25, __lowerCaseEncryption
 
-__upperCase:
+__upperCaseEncryption:
 	#add the offset
 	add $t2, $t2, $s1
 	#if the number is less than 'Z' then continue with the encryption
@@ -170,7 +172,7 @@ __upperCase:
 	#jump to continueEncryptLetter
 	jal __continueEncryptLetter
 	
-__lowerCase:
+__lowerCaseEncryption:
 	#add the offset
 	add $t2, $t2, $s1
 	#if the number is less than 'z' then continue with the encryption
@@ -181,24 +183,24 @@ __lowerCase:
 	jal __continueEncryptLetter
 	
 __continueEncryptLetter:
-	#load the new offset byte into $t4
-	lb $t4, alphabet($t2)
+	#load the new offset byte into $t6
+	lb $t6, alphabet($t2)
 	#print the character
 	li $v0, 11
-	move $a0, $t4
+	move $a0, $t6
 	syscall
 	#jump to __incrementString in order to go to the next letter of the message
-	jal __incrementString
+	jal __incrementStringEncryption
 
-__printSpace:
+__printSpaceEncryption:
 	#print space character
 	li $v0, 11
 	la $a0, 32
 	syscall
 	#jump to __incrementString in order to go to the next letter of the message
-	jal __incrementString 
+	jal __incrementStringEncryption
 
-__incrementString:	
+__incrementStringEncryption:	
 	#increment $0
 	addi $t0, $t0, 1
 	#reset loop counter for alphabet
@@ -252,11 +254,11 @@ __lowerCaseDecryption:
 	jal __continueDecryptLetter
 
 __continueDecryptLetter:
-	#load the new offset byte into $t4
-	lb $t4, alphabet($t2)
+	#load the new offset byte into $t6
+	lb $t6, alphabet($t2)
 	#print the character
 	li $v0, 11
-	move $a0, $t4
+	move $a0, $t6
 	syscall
 	#jump to __incrementString in order to go to the next letter of the message
 	jal __incrementStringDecryption
