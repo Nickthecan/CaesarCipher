@@ -29,6 +29,7 @@
  #$t2 - loop counter for alphabet
  #$t3 - register to hold the iteration of the letters of alphabet string
  #$t4 - register to hold the encrypted letter to print out
+ #$t5 - register to hold the iteration of the letters of the message to check for invalid characters
  #-----------------------------------------------------------------------------------
  
  .include "CaesarCipherMacros.asm"
@@ -38,16 +39,13 @@
  	alphabet: .asciiz  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
  .text
  main:
- 	#question to ask the user for a message
- 	print("what word\n")
-  	#get a user input and store it into buffer
-	userInput
-	#question to ask the user for the offset
-	print("how many offset\n")
-	#get a user input and store it into register $s0
-	keyOffset
-	
-	#loop counter for for loop
+ 	#print main menu selection
+ 	print("Select an option:\n(1) encrypt\n(2) decrypt\n(3) exit\n")
+ 	
+ 	li $v0, 5
+ 	syscall
+ 	
+ 	#loop counter for for loop
 	li $t0, 0
 	#loop counter for nested for loop
 	li $t2, 0
@@ -57,6 +55,31 @@
 	li $s3, 0
 	#store buffer into $s0
 	la $s0, buffer
+ 	
+ 	blt $v0, 1, main
+ 	bgt $v0, 3, main
+ 	
+ 	beq $v0, 3, exit
+
+__getKey:
+	print("Enter the key (must be greater than 0):\n")
+	#get a user input and store it into register $s0
+	keyOffset
+	blt $s1, 1, __getKey
+	j __messagePrompt
+	
+ __messagePrompt:
+ 	#question to ask the user for a message
+ 	print("Enter a message:\n")
+  	#get a user input and store it into buffer
+	userInput
+	#question to ask the user for the offset
+	j __lengthOfMessage
+
+	
+__invalidMessage:
+	print("Invalid Message!\n")
+	j __messagePrompt
 
 __lengthOfMessage:     #this is gonna be challenge to write about
 	#load the byte of the message into $t1
@@ -71,6 +94,9 @@ __lengthOfMessage:     #this is gonna be challenge to write about
 __doSomethingToRegisters3:
 	#decrement register $s3 by 1 in order to not have an excess char when printing the encrypted message
 	subi $s3, $s3, 1
+	beq $v0, 1, __encryptionLoop
+	
+	
 	
 __encryptionLoop:
 	#load the first byte (character) into register $t1
@@ -83,12 +109,25 @@ __encryptionLoop:
 __checkAlphabet:
 	#nested for loop
 	lb $t3, alphabet($t2)
+	#check for invalid characters
+	jal __checkValidity
 	#compare the two characters
 	beq $t1, $t3, __twoCharsAreEqual
 	#if not, increment $t2
 	addi  $t2, $t2, 1
 	#jump back to __checkAlphabet until the characters are equal
 	jal __checkAlphabet
+
+
+__checkValidity:
+	#check if characters are letters
+	blt $t1, 65, __invalidMessage
+	bgt $t1, 122, __invalidMessage
+	bgt $t1, 90, __isUpperCase
+	jr $ra
+__isUpperCase:
+	blt $t1, 97, __invalidMessage
+	jr $ra
 
 __incrementString:	
 	#increment $0
@@ -103,8 +142,8 @@ __printSpace:
 	li $v0, 11
 	la $a0, 32
 	syscall
-	jal __incrementString
-
+	jal __incrementString 
+	
 __twoCharsAreEqual:
 	#checks if the character being passed through is an Uppercase character
 	bge $t2, 27, __upperCase
@@ -142,6 +181,7 @@ __lowerCase:
 	jal __continueEncryptLetter
 	
 exit:
+	print("\nGoodbye")
 	quitProgram
 	
 	
